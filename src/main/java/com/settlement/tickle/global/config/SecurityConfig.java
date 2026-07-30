@@ -83,7 +83,10 @@ public class SecurityConfig {
 
         // 인가 설정
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/members/signup", "/api/v1/auth/login", "/api/v1/auth/logout").permitAll()
+                .requestMatchers("/api/v1/members/signup",
+                        "/api/v1/auth/login",
+                        "/api/v1/auth/logout",
+                        "/api/v1/auth/reissue").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/members/*/exists").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()

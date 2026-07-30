@@ -56,6 +56,21 @@ public class MemberController {
         return ResultResponse.of(ResultCode.MEMBER_NICKNAME_CHECK_SUCCESS, exists);
     }
 
+    // 회원가입
+    @Operation(summary = "회원가입", description = "구매자(MEMBER) 또는 판매자(HOST)로 회원가입합니다. 관리자(ADMIN)는 공개 가입으로 생성할 수 없습니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "회원가입 성공"),
+            @ApiResponse(responseCode = "400", description = "입력값 검증 실패 / 허용되지 않은 회원 유형(ADMIN) / 판매자 정산 지급 정보 누락",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "이미 사용 중인 이메일 또는 닉네임",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping(value = "/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResultResponse<?> signupApi(@Valid @RequestBody MemberSignupRequestDto signupRequestDto) {
+        memberService.signup(signupRequestDto);
+        return ResultResponse.success(ResultCode.MEMBER_CREATE_SUCCESS);
+    }
+
     // 내 정보 조회 (판매자 대시보드 등에서 사용)
     @Operation(summary = "내 정보 조회", description = "로그인한 본인의 회원 정보를 조회합니다. 판매자 대시보드에서 사용자/정산 지급 정보 표시에 사용합니다.")
     @ApiResponses({
@@ -70,21 +85,6 @@ public class MemberController {
     public ResultResponse<MemberInfoResponseDto> myInfoApi(@AuthenticationPrincipal CustomUserPrincipal principal) {
         MemberInfoResponseDto memberInfo = memberService.getMyInfo(principal.getUserId());
         return ResultResponse.of(ResultCode.MEMBER_INFO_SUCCESS, memberInfo);
-    }
-
-    // 회원가입
-    @Operation(summary = "회원가입", description = "구매자(MEMBER) 또는 판매자(HOST)로 회원가입합니다. 관리자(ADMIN)는 공개 가입으로 생성할 수 없습니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "회원가입 성공"),
-            @ApiResponse(responseCode = "400", description = "입력값 검증 실패 / 허용되지 않은 회원 유형(ADMIN) / 판매자 정산 지급 정보 누락",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "409", description = "이미 사용 중인 이메일 또는 닉네임",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })
-    @PostMapping(value = "/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResultResponse<?> signupApi(@Valid @RequestBody MemberSignupRequestDto signupRequestDto) {
-        memberService.signup(signupRequestDto);
-        return ResultResponse.success(ResultCode.MEMBER_CREATE_SUCCESS);
     }
 
 }
