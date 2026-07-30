@@ -1,0 +1,17 @@
+name: "Chore(기타 잡무)"
+description: 빌드 설정, 의존성 업데이트 등 코드 로직과 무관한 작업
+title: "[Chore] "
+labels: ["chore"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: 작업 내용
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: 필요한 이유 (선택)
+    validations:
+      required: false

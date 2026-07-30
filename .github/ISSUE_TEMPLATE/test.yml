@@ -1,0 +1,20 @@
+name: "Test(테스트 코드)"
+description: 테스트 코드 추가/보완이 필요할 때 사용
+title: "[Test] "
+labels: ["test"]
+body:
+  - type: textarea
+    id: target
+    attributes:
+      label: 테스트 대상
+      description: 어떤 클래스/기능에 대한 테스트인가요?
+    validations:
+      required: true
+  - type: checkboxes
+    id: type
+    attributes:
+      label: 테스트 종류
+      options:
+        - label: 단위 테스트
+        - label: 통합 테스트
+        - label: E2E 테스트

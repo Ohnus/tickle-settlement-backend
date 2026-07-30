@@ -1,0 +1,39 @@
+name: "Performance(성능 개선)"
+description: 성능 테스트 결과를 바탕으로 개선이 필요한 부분을 등록
+title: "[Perf] "
+labels: ["performance"]
+body:
+  - type: textarea
+    id: target
+    attributes:
+      label: 대상 기능 / API
+      description: 어떤 기능/API에서 성능 이슈가 있나요?
+    validations:
+      required: true
+  - type: textarea
+    id: measurement
+    attributes:
+      label: 측정 결과
+      description: 테스트 도구와 측정 수치(응답시간, TPS, 메모리 등)를 적어주세요
+      placeholder: |
+        - 도구: JMeter / k6 / DB Execution Plan 등
+        - Before:
+        - After:
+    validations:
+      required: true
+  - type: textarea
+    id: cause
+    attributes:
+      label: 추정 원인 (선택)
+    validations:
+      required: false
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 우선순위
+      options:
+        - 낮음
+        - 보통
+        - 높음
+    validations:
+      required: true

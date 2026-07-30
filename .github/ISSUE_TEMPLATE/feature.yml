@@ -1,0 +1,19 @@
+name: "Feature(기능 개발)"
+description: 새로운 기능을 제안하거나 추가할 때 사용
+title: "[Feat] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: background
+    attributes:
+      label: 배경 / 필요한 이유
+      description: 이 기능이 왜 필요한지 설명해주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 기능 설명
+      description: 추가한 기능에 대해 적어주세요
+    validations:
+      required: true
