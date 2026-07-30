@@ -9,6 +9,11 @@ import org.springframework.http.HttpStatus;
 public enum ResultCode {
 
     /* ==================
+    *  AUTH
+    *  ================== */
+    TOKEN_REISSUE_SUCCESS(HttpStatus.OK, "토큰 재발급이 완료되었습니다."),
+
+    /* ==================
     *  MEMBER(회원)
     *  ================== */
     MEMBER_EMAIL_CHECK_SUCCESS(HttpStatus.OK, "이메일 중복 확인이 완료되었습니다."),

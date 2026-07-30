@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 @Schema(description = "이메일/닉네임 중복 검사 요청 — 호출하는 엔드포인트에 해당하는 필드만 채워서 사용")
 public class MemberExistsRequestDto {
 
-    @Schema(description = "중복 확인할 이메일 (이메일 중복 검사에서만 사용)", example = "user@example.com")
+    @Schema(description = "중복 확인할 이메일 (이메일 중복 검사에서만 사용)", example = "user1@example.com")
     @Email(message = "올바른 이메일 형식이 아닙니다.")
     @Size(max = 30, message = "이메일은 30자를 초과할 수 없습니다.")
     private final String email;

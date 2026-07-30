@@ -14,13 +14,13 @@ import lombok.RequiredArgsConstructor;
 @Schema(description = "회원가입 요청")
 public class MemberSignupRequestDto {
 
-    @Schema(description = "이메일", example = "user@example.com", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "이메일", example = "user1@example.com", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "이메일을 입력하세요.")
     @Email(message = "올바른 이메일 형식이 아닙니다.")
     @Size(max = 30, message = "이메일은 30자를 초과할 수 없습니다.")
     private final String email;
 
-    @Schema(description = "비밀번호 (8~20자)", example = "password123!", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "비밀번호 (8~20자)", example = "12341234", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "비밀번호를 입력하세요.")
     @Size(min = 8, max = 20, message = "비밀번호는 8자 이상 20자 이하로 입력하세요.")
     private final String password;
@@ -32,7 +32,7 @@ public class MemberSignupRequestDto {
 
     // 공개 회원가입은 구매자(MEMBER) 또는 판매자(HOST)만 선택 가능 — ADMIN은 서비스단에서 차단
     @Schema(description = "회원 유형 (MEMBER: 구매자, HOST: 판매자 — ADMIN은 공개 가입으로 선택 불가)",
-            example = "MEMBER", requiredMode = Schema.RequiredMode.REQUIRED)
+            example = "HOST", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "회원 유형을 선택하세요.")
     private final MemberRoleType role;
 
