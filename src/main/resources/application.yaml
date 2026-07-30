@@ -1,0 +1,132 @@
+spring:
+  application:
+    name: tickle
+
+  # Redis
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+  # PostgreSQL 데이터베이스 설정 (Docker 컨테이너)
+  datasource:
+    url: jdbc:postgresql://localhost:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 10
+      connection-timeout: 3000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+
+  # JPA 설정
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+          lob:
+            non_contextual_creation: true
+    defer-datasource-initialization: true
+
+  # 배치 설정
+  batch:
+    jdbc:
+      initialize-schema: always # 개발 단계에서는 배치 테이블 자동 생성, 운영 중에는 DBA가 수동 생성 및 관리
+      table-prefix: BATCH_  # spring-batch-core jar 안에 있는 쿼리 그대로 사용한다면 BATCH_로 고정
+
+# 서버 설정
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  error:
+    include-stacktrace: never
+    include-message: always
+  tomcat:
+    accept-count: 4096          # 백로그 큐 크기
+    max-connections: 25000      # 최대 연결 수
+    threads:
+      max: 500                  # 최대 스레드 수
+      min-spare: 50             # 최소 유지 스레드
+    http2:
+      enabled: false
+    acceptor-thread-count: 2  # acceptor 스레드
+    connection-timeout: 20s   # 연결 타임아웃
+    accesslog:
+      enabled: true
+      directory: logs
+      prefix: access_log
+      suffix: .log
+      pattern: "%h %l %u %t \"%r\" %s %b %D"
+      rotate: false
+    keep-alive-timeout: 5000
+    max-keep-alive-requests: 10000
+
+# Mybatis 설정
+mybatis:
+  # default Package location - resultType의 Alias를 지정합니다.
+  type-aliases-package: com.settlement.tickle.domain
+  # mapper location - 바라 볼 xml 파일을 지정합니다.
+  mapper-locations: classpath:mapper/**/*.xml
+  # column name to camel case - 반환 받는 컬럼명을 CamelCase로 받는 설정을 합니다.
+  configuration:
+    map-underscore-to-camel-case: true
+    jdbc-type-for-null: NULL
+
+# 로그
+logging:
+  level:
+    com.settlement.tickle: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE # 실제 바인딩된 파라미터 값 표시
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# micrometer / actuator / prometheus 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus, loggers
+  endpoint:
+    health:
+      show-details: always
+  # Prometheus 레지스트리 활성화 (기본은 true 이지만 명시적으로 적어두시면 안전)
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+# Swagger 설정
+springdoc:
+  swagger-ui:
+    groups-order: DESC
+    tags-sorter: alpha
+    operations-sorter: method
+    disable-swagger-default-url: true
+    display-request-duration: true
+    defaultModelsExpandDepth: 2
+    defaultModelExpandDepth: 2
+  api-docs:
+    path: /api-docs
+    groups:
+      enabled: true
+
+# JWT
+app:
+  jwt:
+    secret-key: ${JWT_SECRET_KEY}
+    access-expiration-time: ${JWT_ACCESS_EXPIRATION_TIME}
+    refresh-expiration-time: ${JWT_REFRESH_EXPIRATION_TIME}
+
+# 판매자 수수료율 (전 판매자 공통 고정값 — 호스트별/기간별 협상 요율 없음)
+host:
+  contract:
+    charge-rate: 0.05
