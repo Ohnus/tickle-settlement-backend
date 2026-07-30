@@ -21,7 +21,7 @@ public class CustomUserDetails implements UserDetails {
         this.email = member.getEmail();
         this.password = member.getPassword();
         this.isDeleted = member.isDeleted();
-        this.authorities = List.of(new SimpleGrantedAuthority(member.getRole().name()));
+        this.authorities = List.of(new SimpleGrantedAuthority("ROLE_" + member.getRole().name()));
     }
 
     public Long getUserId() {
