@@ -83,7 +83,7 @@ public class Member {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
-        this.role = role != null ? role : MemberRoleType.MEMBER;
+        this.role = role != null ? role : MemberRoleType.HOST;
         this.hostBizNumber = hostBizNumber;
         this.hostBizName = hostBizName;
         this.hostBizBank = hostBizBank;

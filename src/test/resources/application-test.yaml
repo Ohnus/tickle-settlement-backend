@@ -1,0 +1,14 @@
+# 테스트 전용 프로필입니다.
+# 테스트 클래스에 @ActiveProfiles("test")를 붙여야 이 파일이 적용됩니다 (기본 application.yaml 위에 덮어씀).
+#
+# 지금은 JWT 관련 필수값만 더미로 채워둡니다 — JwtUtil이 @Value로 app.jwt.* 값을 강제로 주입받기 때문에,
+# 이 값이 없으면 Spring 컨텍스트를 띄우는 테스트(@SpringBootTest, @WebMvcTest 등)는 아예 시작도 못 하고 실패합니다.
+# 실제 서비스에 쓰는 진짜 비밀키가 아니라, 테스트에서만 쓰는 가짜 값입니다.
+#
+# DB/Redis는 일부러 여기서 안 잡았습니다. 나중에 Testcontainers로 테스트마다 Postgres 컨테이너를
+# 직접 띄워서 붙일 예정이라(CLAUDE.md 테스트 섹션 참고), 그때 가서 필요한 설정을 추가할 겁니다.
+app:
+  jwt:
+    secret-key: test-secret-key-only-used-in-unit-and-integration-tests-1234567890
+    access-expiration-time: 3600000    # 1시간 (ms)
+    refresh-expiration-time: 86400000  # 1일 (ms)
