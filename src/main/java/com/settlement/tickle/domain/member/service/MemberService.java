@@ -99,7 +99,6 @@ public class MemberService implements UserDetailsService {
     // 로그인
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-
         Member member = memberRepository.findByEmailAndDeletedAtIsNull(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
 
@@ -113,8 +112,4 @@ public class MemberService implements UserDetailsService {
 
         return MemberInfoResponseDto.from(member);
     }
-
-    // 유저 정보 수정
-
-    // 회원탈퇴(소프트 딜리트) + Redis Refresh Token 삭제
 }
