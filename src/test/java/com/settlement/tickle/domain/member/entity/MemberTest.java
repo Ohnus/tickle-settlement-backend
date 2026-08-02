@@ -29,7 +29,7 @@ class MemberTest {
         @Test
         // @Test: JUnit5에게 "이 메서드는 테스트다, 실행해라"라고 표시하는 어노테이션.
         // 이게 없으면 그냥 평범한 메서드라 테스트 실행 시 무시된다.
-        @DisplayName("deletedAt이 없으면 false를 반환한다")
+        @DisplayName("deletedAt이 없으면 false를 반환한다.")
         void returnsFalse_whenDeletedAtIsNull() {
 
             // given: 테스트할 대상을 준비하는 단계.
@@ -57,7 +57,7 @@ class MemberTest {
     class BuilderTest {
 
         @Test
-        @DisplayName("role을 지정하지 않으면 기본값을 HOST로 설정한다")
+        @DisplayName("role을 지정하지 않으면 기본값을 HOST로 설정한다.")
         void setsDefaultRole_whenRoleIsNull() {
 
             // given & when: role(...)을 아예 호출하지 않고 생성
@@ -74,7 +74,7 @@ class MemberTest {
         }
 
         @Test
-        @DisplayName("role을 지정하면 그 값을 그대로 사용한다")
+        @DisplayName("role을 지정하면 그 값을 그대로 사용한다.")
         void keepsGivenRole_whenRoleIsProvided() {
 
             Member member = Member.builder()
