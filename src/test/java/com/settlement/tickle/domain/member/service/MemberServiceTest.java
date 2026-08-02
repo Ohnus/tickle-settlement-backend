@@ -1,6 +1,7 @@
 package com.settlement.tickle.domain.member.service;
 
 import com.settlement.tickle.domain.member.dto.request.MemberExistsRequestDto;
+import com.settlement.tickle.domain.member.dto.request.MemberSignupRequestDto;
 import com.settlement.tickle.domain.member.dto.response.MemberInfoResponseDto;
 import com.settlement.tickle.domain.member.entity.Member;
 import com.settlement.tickle.domain.member.entity.MemberRoleType;
@@ -12,17 +13,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
@@ -47,7 +51,10 @@ class MemberServiceTest {
     // 즉 실제 DB에 쿼리를 날리지 않는다. 그래서 이 테스트는 DB 없이도 실행된다.
     private MemberRepository memberRepository;
 
-    // 나중에 signup()을 테스트할 때 @Mock private PasswordEncoder passwordEncoder;를 추가.
+    @Mock
+    // signup()이 비밀번호를 암호화할 때 쓰는 PasswordEncoder도 가짜로 대체한다.
+    // 진짜 BCrypt로 암호화하지 않고, encode()가 뭘 리턴할지도 우리가 스텁으로 정해준다.
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     // @InjectMocks: 위에서 만든 @Mock들을 MemberService의 생성자에 자동으로 꽂아서
@@ -60,7 +67,7 @@ class MemberServiceTest {
     class ExistsByEmailTest {
 
         @Test
-        @DisplayName("이메일이 비어있으면 INVALID_INPUT_VALUE 예외를 던지고, Repository는 호출하지 않는다")
+        @DisplayName("이메일이 비어있으면 INVALID_INPUT_VALUE 예외를 던지고, Repository는 호출하지 않는다.")
         void throwsException_whenEmailIsBlank() {
 
             // given: email이 빈 문자열인 요청 DTO 준비 (nickname은 이 테스트와 무관하니 null)
@@ -86,7 +93,7 @@ class MemberServiceTest {
         }
 
         @Test
-        @DisplayName("Repository가 이메일이 존재한다고 하면, 그대로 true를 반환한다")
+        @DisplayName("Repository가 이메일이 존재한다고 하면, 그대로 true를 반환한다.")
         void returnsTrue_whenRepositoryReturnsTrue() {
 
             // given
@@ -106,7 +113,7 @@ class MemberServiceTest {
         }
 
         @Test
-        @DisplayName("Repository가 이메일이 없다고 하면, 그대로 false를 반환한다")
+        @DisplayName("Repository가 이메일이 없다고 하면, 그대로 false를 반환한다.")
         void returnsFalse_whenRepositoryReturnsFalse() {
 
             // given
@@ -299,6 +306,178 @@ class MemberServiceTest {
 
             // then
             assertThat(exception).isNotNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("signup()은")
+    class SignupTest {
+
+        @Test
+        @DisplayName("이메일이 이미 존재하면 EMAIL_ALREADY_EXISTS 예외를 던지고, 그 이후 로직은 실행하지 않는다.")
+        void throwsException_whenEmailAlreadyExists() {
+
+            // given
+            MemberSignupRequestDto requestDto = new MemberSignupRequestDto(
+                    "user@example.com", "password123!", "tickle", MemberRoleType.MEMBER,
+                    null, null, null, null, null
+            );
+            given(memberRepository.existsByEmail(requestDto.getEmail())).willReturn(true);
+
+            // when
+            BusinessException exception = catchThrowableOfType(
+                    BusinessException.class,
+                    () -> memberService.signup(requestDto)
+            );
+
+            // then
+            assertThat(exception).isNotNull();
+            assertThat(exception.getErrorcode()).isEqualTo(ErrorCode.EMAIL_ALREADY_EXISTS);
+
+            // 이메일 중복에서 이미 끝났으니, 닉네임 중복 체크나 저장까지는 절대 가면 안 된다.
+            // any()는 "인자가 뭐든 상관없이"라는 뜻의 매처 — anyString()의 더 범용 버전(어떤 타입이든 매칭).
+            verify(memberRepository, never()).existsByNickname(anyString());
+            verify(memberRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("닉네임이 이미 존재하면 NICKNAME_ALREADY_EXISTS 예외를 던진다.")
+        void throwsException_whenNicknameAlreadyExists() {
+
+            // given
+            MemberSignupRequestDto requestDto = new MemberSignupRequestDto(
+                    "user@example.com", "password123!", "tickle", MemberRoleType.MEMBER,
+                    null, null, null, null, null
+            );
+            given(memberRepository.existsByEmail(requestDto.getEmail())).willReturn(false);
+            given(memberRepository.existsByNickname(requestDto.getNickname())).willReturn(true);
+
+            // when
+            BusinessException exception = catchThrowableOfType(
+                    BusinessException.class,
+                    () -> memberService.signup(requestDto)
+            );
+
+            // then
+            assertThat(exception).isNotNull();
+            assertThat(exception.getErrorcode()).isEqualTo(ErrorCode.NICKNAME_ALREADY_EXISTS);
+            verify(memberRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("회원 유형이 MEMBER/HOST가 아니면(ADMIN 등) INVALID_SIGNUP_ROLE 예외를 던진다.")
+        void throwsException_whenRoleIsInvalid() {
+
+            // given: 공개 회원가입으로 ADMIN을 선택하려는 시도 — 서비스 단에서 막아야 하는 케이스
+            MemberSignupRequestDto requestDto = new MemberSignupRequestDto(
+                    "admin@example.com", "password123!", "admin", MemberRoleType.ADMIN,
+                    null, null, null, null, null
+            );
+            given(memberRepository.existsByEmail(requestDto.getEmail())).willReturn(false);
+            given(memberRepository.existsByNickname(requestDto.getNickname())).willReturn(false);
+
+            // when
+            BusinessException exception = catchThrowableOfType(
+                    BusinessException.class,
+                    () -> memberService.signup(requestDto)
+            );
+
+            // then
+            assertThat(exception).isNotNull();
+            assertThat(exception.getErrorcode()).isEqualTo(ErrorCode.INVALID_SIGNUP_ROLE);
+            verify(memberRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("HOST인데 정산 지급 정보가 일부라도 비어있으면 HOST_BIZ_INFO_REQUIRED 예외를 던진다.")
+        void throwsException_whenHostBizInfoIsMissing() {
+
+            // given: hostBizBank만 비워둠 (나머지 4개는 다 채움) — 하나라도 비면 막혀야 한다
+            MemberSignupRequestDto requestDto = new MemberSignupRequestDto(
+                    "host@example.com", "password123!", "hostuser", MemberRoleType.HOST,
+                    "123-45-67890", "티클컴퍼니", null, "홍길동", "123456-78-901234"
+            );
+            given(memberRepository.existsByEmail(requestDto.getEmail())).willReturn(false);
+            given(memberRepository.existsByNickname(requestDto.getNickname())).willReturn(false);
+
+            // when
+            BusinessException exception = catchThrowableOfType(
+                    BusinessException.class,
+                    () -> memberService.signup(requestDto)
+            );
+
+            // then
+            assertThat(exception).isNotNull();
+            assertThat(exception.getErrorcode()).isEqualTo(ErrorCode.HOST_BIZ_INFO_REQUIRED);
+            verify(memberRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("구매자(MEMBER)로 정상 가입하면, 비밀번호를 암호화해서 저장하고 판매자 정산 정보는 전부 null이다.")
+        void savesMember_whenMemberSignupIsValid() {
+
+            // given
+            MemberSignupRequestDto requestDto = new MemberSignupRequestDto(
+                    "user@example.com", "password123!", "tickle", MemberRoleType.MEMBER,
+                    null, null, null, null, null
+            );
+            given(memberRepository.existsByEmail(requestDto.getEmail())).willReturn(false);
+            given(memberRepository.existsByNickname(requestDto.getNickname())).willReturn(false);
+            // passwordEncoder도 가짜라서, encode(원본 비밀번호)가 호출되면 뭘 리턴할지 정해줘야 한다.
+            given(passwordEncoder.encode(requestDto.getPassword())).willReturn("encoded-password123!");
+
+            // when: signup()은 리턴값이 void라서, when 단계에서 결과를 변수로 받을 게 없다.
+            memberService.signup(requestDto);
+
+            // then
+            // ArgumentCaptor: void 메서드라 리턴값으로는 검증할 게 없으니, 대신
+            // "memberRepository.save()가 호출될 때 실제로 어떤 Member 객체가 넘어갔는지"를
+            // 가로채서 붙잡아두는 도구. capture()로 표시해두고 verify()로 실행시킨 뒤, getValue()로 꺼내 쓴다.
+            ArgumentCaptor<Member> memberCaptor = ArgumentCaptor.forClass(Member.class);
+            verify(memberRepository).save(memberCaptor.capture());
+            Member savedMember = memberCaptor.getValue();
+
+            assertThat(savedMember.getEmail()).isEqualTo("user@example.com");
+            // 원본 비밀번호("password123!")가 아니라, passwordEncoder.encode()가 리턴하기로 한
+            // 암호화된 값이 그대로 들어갔는지 확인 — "진짜로 암호화를 거쳤는지"를 검증하는 포인트.
+            assertThat(savedMember.getPassword()).isEqualTo("encoded-password123!");
+            assertThat(savedMember.getNickname()).isEqualTo("tickle");
+            assertThat(savedMember.getRole()).isEqualTo(MemberRoleType.MEMBER);
+            // MEMBER는 판매자 정산 정보가 전부 null로 저장되어야 한다.
+            assertThat(savedMember.getHostBizNumber()).isNull();
+            assertThat(savedMember.getHostBizName()).isNull();
+            assertThat(savedMember.getHostBizBank()).isNull();
+            assertThat(savedMember.getHostBizDepositor()).isNull();
+            assertThat(savedMember.getHostBizBankNumber()).isNull();
+        }
+
+        @Test
+        @DisplayName("판매자(HOST)로 정상 가입하면, 정산 지급 정보까지 함께 저장한다.")
+        void savesMember_whenHostSignupIsValid() {
+
+            // given
+            MemberSignupRequestDto requestDto = new MemberSignupRequestDto(
+                    "host@example.com", "password123!", "hostuser", MemberRoleType.HOST,
+                    "123-45-67890", "티클컴퍼니", "국민은행", "홍길동", "123456-78-901234"
+            );
+            given(memberRepository.existsByEmail(requestDto.getEmail())).willReturn(false);
+            given(memberRepository.existsByNickname(requestDto.getNickname())).willReturn(false);
+            given(passwordEncoder.encode(requestDto.getPassword())).willReturn("encoded-password123!");
+
+            // when
+            memberService.signup(requestDto);
+
+            // then
+            ArgumentCaptor<Member> memberCaptor = ArgumentCaptor.forClass(Member.class);
+            verify(memberRepository).save(memberCaptor.capture());
+            Member savedMember = memberCaptor.getValue();
+
+            assertThat(savedMember.getRole()).isEqualTo(MemberRoleType.HOST);
+            assertThat(savedMember.getHostBizNumber()).isEqualTo("123-45-67890");
+            assertThat(savedMember.getHostBizName()).isEqualTo("티클컴퍼니");
+            assertThat(savedMember.getHostBizBank()).isEqualTo("국민은행");
+            assertThat(savedMember.getHostBizDepositor()).isEqualTo("홍길동");
+            assertThat(savedMember.getHostBizBankNumber()).isEqualTo("123456-78-901234");
         }
     }
 }
