@@ -106,4 +106,10 @@ public class SettlementEntry {
         this.commission = commission;
         this.netAmount = netAmount;
     }
+
+    // 예매 취소에 연동된 상태 변경: WAITING -> CANCELED.
+    // entry_updated_at은 @LastModifiedDate가 자동 갱신하며, 그 값이 일간 배치의 조정(adjustment) 대상 판별 기준이 된다.
+    public void cancel(Status canceledStatus) {
+        this.status = canceledStatus;
+    }
 }

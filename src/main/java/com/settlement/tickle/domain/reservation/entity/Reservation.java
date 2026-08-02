@@ -69,4 +69,9 @@ public class Reservation {
         this.code = code;
         this.price = price;
     }
+
+    // 예매 취소: RESERVED -> CANCELED. 상태 변경은 여기서만 일어나야 하므로 별도 setter를 두지 않는다.
+    public void cancel(Status canceledStatus) {
+        this.status = canceledStatus;
+    }
 }
