@@ -24,7 +24,13 @@ public enum ResultCode {
     MEMBER_INFO_SUCCESS(HttpStatus.OK, "유저 정보 조회 성공"),
     MEMBER_INFO_UPDATE_SUCCESS(HttpStatus.OK, "회원 정보가 수정되었습니다."),
     MEMBER_PASSWORD_CHANGE_SUCCESS(HttpStatus.OK, "비밀번호가 변경되었습니다."),
-    MEMBER_DELETE_SUCCESS(HttpStatus.OK, "회원 탈퇴가 완료되었습니다.");
+    MEMBER_DELETE_SUCCESS(HttpStatus.OK, "회원 탈퇴가 완료되었습니다."),
+
+    /* ==================
+    *  RESERVATION(예매)
+    *  ================== */
+    RESERVATION_CREATE_SUCCESS(HttpStatus.CREATED, "예매가 완료되었습니다."),
+    RESERVATION_CANCEL_SUCCESS(HttpStatus.OK, "예매가 취소되었습니다.");
 
     private final HttpStatus status;
     private final String message;
