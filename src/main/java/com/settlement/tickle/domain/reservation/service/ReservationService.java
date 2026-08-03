@@ -25,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.UUID;
 
 @Service
@@ -120,10 +119,9 @@ public class ReservationService {
             throw new BusinessException(ErrorCode.RESERVATION_ALREADY_CANCELED);
         }
 
-        // 취소 가능 기간: 공연일 전날 23:59:59까지.
+        // 취소 가능 기간: 예매 종료일까지.
         Performance performance = reservation.getPerformance();
-        LocalDateTime cancelDeadline = performance.getStartDate().toLocalDate().minusDays(1).atTime(LocalTime.MAX);
-        if (LocalDateTime.now().isAfter(cancelDeadline)) {
+        if (LocalDateTime.now().isAfter(performance.getReservationEndDate())) {
             throw new BusinessException(ErrorCode.RESERVATION_CANCEL_PERIOD_EXPIRED);
         }
 

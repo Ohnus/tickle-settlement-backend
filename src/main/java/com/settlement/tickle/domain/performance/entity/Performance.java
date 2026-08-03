@@ -53,18 +53,27 @@ public class Performance {
     @Column(name = "performance_end_date", nullable = false)
     private LocalDateTime endDate;
 
+    @Column(name = "performance_reservation_start_date", nullable = false)
+    private LocalDateTime reservationStartDate;
+
+    @Column(name = "performance_reservation_end_date", nullable = false)
+    private LocalDateTime reservationEndDate;
+
     @CreatedDate
     @Column(name = "performance_created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Builder
     public Performance(Member member, Status status, String title, Integer price,
-                        LocalDateTime startDate, LocalDateTime endDate) {
+                        LocalDateTime startDate, LocalDateTime endDate,
+                        LocalDateTime reservationStartDate, LocalDateTime reservationEndDate) {
         this.member = member;
         this.status = status;
         this.title = title;
         this.price = price;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.reservationStartDate = reservationStartDate;
+        this.reservationEndDate = reservationEndDate;
     }
 }

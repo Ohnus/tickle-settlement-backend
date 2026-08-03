@@ -76,6 +76,7 @@ class SettlementEntryRepositoryTest {
             Performance performance = performanceRepository.save(Performance.builder()
                     .member(host).status(performanceStatus).title("리포지토리 테스트 공연").price(30000)
                     .startDate(LocalDateTime.now().plusDays(10)).endDate(LocalDateTime.now().plusDays(10).plusHours(2))
+                    .reservationStartDate(LocalDateTime.now()).reservationEndDate(LocalDateTime.now().plusDays(9))
                     .build());
 
             Status reservedStatus = statusRepository.findByTypeAndDescription(StatusType.RESERVATION, "RESERVED").orElseThrow();

@@ -79,7 +79,7 @@ class ReservationServiceTest {
         return buyer;
     }
 
-    private Reservation buildReservation(Member buyer, Status reservationStatus, LocalDateTime performanceStartDate) {
+    private Reservation buildReservation(Member buyer, Status reservationStatus, LocalDateTime reservationEndDate) {
         Member host = Member.builder()
                 .email("host@example.com").password("encoded").nickname("host").role(MemberRoleType.HOST)
                 .build();
@@ -88,7 +88,8 @@ class ReservationServiceTest {
         Status performanceStatus = Status.builder().code(1).description("ON_SALE").type(StatusType.PERFORMANCE).build();
         Performance performance = Performance.builder()
                 .member(host).status(performanceStatus).title("콘서트").price(50000)
-                .startDate(performanceStartDate).endDate(performanceStartDate.plusHours(3))
+                .startDate(reservationEndDate.plusDays(1)).endDate(reservationEndDate.plusDays(1).plusHours(3))
+                .reservationStartDate(reservationEndDate.minusDays(7)).reservationEndDate(reservationEndDate)
                 .build();
 
         Reservation reservation = Reservation.builder()
@@ -117,6 +118,7 @@ class ReservationServiceTest {
             Performance performance = Performance.builder()
                     .member(host).status(performanceStatus).title("콘서트").price(50000)
                     .startDate(LocalDateTime.now().plusDays(10)).endDate(LocalDateTime.now().plusDays(10).plusHours(3))
+                    .reservationStartDate(LocalDateTime.now()).reservationEndDate(LocalDateTime.now().plusDays(9))
                     .build();
             ReflectionTestUtils.setField(performance, "id", 1L);
 
@@ -302,10 +304,10 @@ class ReservationServiceTest {
         }
 
         @Test
-        @DisplayName("공연일 전날을 지났으면 RESERVATION_CANCEL_PERIOD_EXPIRED 예외를 던진다.")
+        @DisplayName("예매 종료일을 지났으면 RESERVATION_CANCEL_PERIOD_EXPIRED 예외를 던진다.")
         void throwsException_whenCancelPeriodExpired() {
 
-            // given: 이미 지나간 공연에 대한 예매라 취소 기한(공연일 전날 23:59:59)도 지난 상태.
+            // given: 예매 종료일이 이미 지난 상태.
             Member buyer = buildBuyer(1L);
             Reservation reservation = buildReservation(buyer, reservedStatus, LocalDateTime.now().minusDays(1));
             given(reservationRepository.findById(100L)).willReturn(Optional.of(reservation));
