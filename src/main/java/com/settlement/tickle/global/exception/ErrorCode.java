@@ -62,7 +62,7 @@ public enum ErrorCode {
     RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "예매를 찾을 수 없습니다."),
     RESERVATION_ACCESS_DENIED(HttpStatus.FORBIDDEN, "본인의 예매만 취소할 수 있습니다."),
     RESERVATION_ALREADY_CANCELED(HttpStatus.CONFLICT, "이미 취소된 예매입니다."),
-    RESERVATION_CANCEL_PERIOD_EXPIRED(HttpStatus.BAD_REQUEST, "공연일 전날까지만 예매를 취소할 수 있습니다."),
+    RESERVATION_CANCEL_PERIOD_EXPIRED(HttpStatus.BAD_REQUEST, "예매 종료일까지만 예매를 취소할 수 있습니다."),
 
     /* ==================
     *  Settlement(정산) — 예매 도메인에서 건별 정산과 연동할 때 사용

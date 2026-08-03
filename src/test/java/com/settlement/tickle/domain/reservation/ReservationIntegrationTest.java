@@ -104,6 +104,7 @@ class ReservationIntegrationTest {
         performance = performanceRepository.save(Performance.builder()
                 .member(host).status(performanceStatus).title("통합테스트 공연").price(40000)
                 .startDate(LocalDateTime.now().plusDays(10)).endDate(LocalDateTime.now().plusDays(10).plusHours(2))
+                .reservationStartDate(LocalDateTime.now()).reservationEndDate(LocalDateTime.now().plusDays(9))
                 .build());
     }
 
@@ -172,10 +173,10 @@ class ReservationIntegrationTest {
         }
 
         @Test
-        @DisplayName("공연일 전날이 지났으면 400을 응답하고 상태가 바뀌지 않는다.")
+        @DisplayName("예매 종료일이 지났으면 400을 응답하고 상태가 바뀌지 않는다.")
         void returns400_andLeavesStateUnchanged_whenPeriodExpired() throws Exception {
 
-            // given: 이미 지나간 공연에 대한 예매.
+            // given: 예매 종료일이 이미 지난 공연.
             Member pastHost = memberRepository.save(Member.builder()
                     .email(uniqueEmail("pastHost"))
                     .password(passwordEncoder.encode("password123!")).nickname("pastHost").role(MemberRoleType.HOST)
@@ -184,6 +185,7 @@ class ReservationIntegrationTest {
             Performance pastPerformance = performanceRepository.save(Performance.builder()
                     .member(pastHost).status(performanceStatus).title("이미 끝난 공연").price(20000)
                     .startDate(LocalDateTime.now().minusDays(1)).endDate(LocalDateTime.now().minusDays(1).plusHours(2))
+                    .reservationStartDate(LocalDateTime.now().minusDays(8)).reservationEndDate(LocalDateTime.now().minusDays(1))
                     .build());
 
             String createResponseBody = mockMvc.perform(post("/api/v1/reservations")

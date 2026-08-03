@@ -45,6 +45,8 @@ CREATE TABLE IF NOT EXISTS performance (
                              performance_price INTEGER NOT NULL,          -- 예매 시 가격 참조용 (좌석 등급 없이 단일가로 단순화)
                              performance_start_date TIMESTAMPTZ NOT NULL,
                              performance_end_date TIMESTAMPTZ NOT NULL,   -- WAITING → COMPLETED 전환 기준(공연일+3일)에 사용
+                             performance_reservation_start_date TIMESTAMPTZ NOT NULL,
+                             performance_reservation_end_date TIMESTAMPTZ NOT NULL,   -- 예매 취소 가능 기한(이 시각까지)에 사용
                              performance_created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

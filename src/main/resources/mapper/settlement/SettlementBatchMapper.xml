@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.settlement.tickle.domain.settlement.batch.mapper.SettlementBatchMapper">
+
+    <!--
+      건별(WAITING) -> 일간(NORMAL) 신규 집계. GROUP BY 결과를 그대로 INSERT하는 SQL.
+      settlement_entry row가 애플리케이션(JVM)으로 전혀 나오지 않고 DB 엔진 안에서 집계와 삽입이 끝남.
+    -->
+    <insert id="aggregateDailyNormal">
+        INSERT INTO settlement_daily (
+        member_id, performance_id, performance_title, settlement_date, entry_type,
+        sales_amount, refund_amount, gross_amount, commission, net_amount,
+        settlement_daily_created_at
+        )
+        SELECT
+        se.member_id,
+        se.performance_id,
+        se.performance_title,
+        #{targetDate}::date,
+        'NORMAL',
+        SUM(se.sales_amount),
+        SUM(se.refund_amount),
+        SUM(se.gross_amount),
+        SUM(se.commission),
+        SUM(se.net_amount),
+        NOW()
+        FROM settlement_entry se
+        JOIN status st ON st.status_id = se.status_id
+        WHERE st.status_type = 'SETTLEMENT'
+        AND st.status_description = 'WAITING'
+        AND se.entry_created_at::date = #{targetDate}::date
+        GROUP BY se.member_id, se.performance_id, se.performance_title
+    </insert>
+
+</mapper>
