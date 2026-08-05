@@ -61,9 +61,9 @@ spring:
   # 배치 설정
   batch:
     job:
-      # false로 꺼두지 않으면 Job 빈이 하나라도 있을 경우 기동할 때마다 JobParameters 없이 자동
-      # 실행을 시도한다. dailySettlementAggregationJob은 targetDate 파라미터가 필수라 그대로 두면
-      # 기동 시 실패한다 - 스케줄러/수동 트리거를 붙이기 전까지는 꺼둔다.
+      # false로 꺼두지 않으면 Job 빈이 하나라도 있을 경우 기동할 때마다 JobParameters 없이 자동 실행을 시도한다.
+      # dailySettlementAggregationJob은 targetDate 파라미터가 필수라 그대로 두면 기동 시 실패한다
+      # 스케줄러/수동 트리거를 붙이기 전까지는 꺼둔다.
       enabled: false
     jdbc:
       initialize-schema: always # 개발 단계에서는 배치 테이블 자동 생성, 운영 중에는 DBA가 수동 생성 및 관리
