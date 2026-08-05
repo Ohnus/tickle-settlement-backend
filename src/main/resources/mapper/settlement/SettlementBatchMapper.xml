@@ -29,7 +29,8 @@
         JOIN status st ON st.status_id = se.status_id
         WHERE st.status_type = 'SETTLEMENT'
         AND st.status_description = 'WAITING'
-        AND se.entry_created_at::date = #{targetDate}::date
+        AND se.entry_created_at >= #{targetDate}::date
+        AND se.entry_created_at &lt; #{targetDate}::date + INTERVAL '1 day'
         GROUP BY se.member_id, se.performance_id, se.performance_title
     </insert>
 

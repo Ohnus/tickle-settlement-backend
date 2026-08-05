@@ -2,6 +2,10 @@ services:
   postgres:
     image: postgres:17.6
     container_name: tickle-settlement
+    command: >
+      postgres
+      -c shared_preload_libraries=pg_stat_statements
+      -c pg_stat_statements.track=all
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
